@@ -14,7 +14,7 @@ public class DebugResource {
     @GET @Path("/db")
     @Produces(MediaType.TEXT_PLAIN)
     public Response db() {
-        try (EntityManager em = JPAUtil.em()) {
+        try (EntityManager em = JPAUtil.getEntityManager()) {
             Object c1 = em.createNativeQuery("select count(*) from category").getSingleResult();
             Object c2 = em.createNativeQuery("select count(*) from item").getSingleResult();
             long cat = ((Number) c1).longValue();

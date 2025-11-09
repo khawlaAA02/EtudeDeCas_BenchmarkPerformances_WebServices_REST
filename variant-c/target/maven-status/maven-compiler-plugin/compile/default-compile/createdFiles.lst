@@ -1,0 +1,8 @@
+variantC\api\ItemController.class
+variantC\repo\ItemRepository.class
+variantC\dto\ItemDTO.class
+variantC\model\Category.class
+variantC\api\CategoryController.class
+variantC\repo\CategoryRepository.class
+variantC\model\Item.class
+variantC\AppC.class

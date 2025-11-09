@@ -1,6 +1,6 @@
 package variantA.mapper;
 
-import variantA.domain.Item;
+import variantA.model.Item;
 import variantA.dto.ItemDTO;
 
 public class ItemMapper {

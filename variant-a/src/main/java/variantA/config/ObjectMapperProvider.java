@@ -20,7 +20,7 @@ public class ObjectMapperProvider implements ContextResolver<ObjectMapper> {
         mapper.registerModule(new JavaTimeModule());
         // Evite les timestamps "1970..." pour les dates
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        // Plus tolérant si des champs inconnus arrivent dans le JSON
+        // Plus tolÃ©rant si des champs inconnus arrivent dans le JSON
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
 

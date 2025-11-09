@@ -4,7 +4,7 @@ services:
   postgres:
     image: postgres:14
     container_name: perf-pg
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: perf
       POSTGRES_PASSWORD: perf
@@ -14,27 +14,47 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  influxdb:
+    image: influxdb:2
+    container_name: perf-influx
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: admin123
+      DOCKER_INFLUXDB_INIT_ORG: perf
+      DOCKER_INFLUXDB_INIT_BUCKET: jmeter
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: superToken123
+    volumes:
+      - influx_data:/var/lib/influxdb2
+      - influx_config:/etc/influxdb2
+    healthcheck:
+      test: ["CMD", "influxd", "version"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   grafana:
     image: grafana/grafana:latest
     container_name: perf-grafana
-    restart: always
+    restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-
-  influxdb:
-    image: influxdb:2.7
-    container_name: perf-influx
-    ports:
-      - "8086:8086"
-    restart: always
-    environment:
-      - DOCKER_INFLUXDB_INIT_MODE=setup
-      - DOCKER_INFLUXDB_INIT_USERNAME=admin
-      - DOCKER_INFLUXDB_INIT_PASSWORD=admin123
-      - DOCKER_INFLUXDB_INIT_ORG=perf
-      - DOCKER_INFLUXDB_INIT_BUCKET=jmeter
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    volumes:
+      - grafana_data:/var/lib/grafana
+      # Si tu veux autoprovisionner la datasource InfluxDB, dé-commente la ligne suivante
+      # et crée le dossier ./provisioning/datasources avec un fichier influx.yaml
+      # - ./provisioning/datasources:/etc/grafana/provisioning/datasources
 
 volumes:
   pgdata:
+  influx_data:
+  influx_config:
+  grafana_data:

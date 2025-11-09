@@ -1,15 +1,13 @@
 package variantA.rest;
 
-import variantA.dto.ItemDTO;
-import variantA.mapper.ItemMapper;
-import variantA.domain.Item;
-import variantA.persistence.JPAUtil;
+import variantA.infra.Jpa;
+import variantA.model.Item;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
+import java.time.Instant;
 import java.util.List;
 
 @Path("/items")
@@ -18,35 +16,65 @@ import java.util.List;
 public class ItemResource {
 
     @GET
-    public Response list(@QueryParam("page") @DefaultValue("0") int page,
-                         @QueryParam("size") @DefaultValue("20") int size,
-                         @QueryParam("categoryId") Long categoryId) {
-        EntityManager em = JPAUtil.em();
+    public List<Item> list(@QueryParam("categoryId") Long categoryId,
+                           @QueryParam("page") @DefaultValue("0") int page,
+                           @QueryParam("size") @DefaultValue("50") int size) {
+        EntityManager em = Jpa.em();
         try {
-            String jpql = "SELECT i FROM Item i " +
-                    (categoryId != null ? "WHERE i.category.id = :cid " : "") +
-                    "ORDER BY i.id";
-            TypedQuery<Item> q = em.createQuery(jpql, Item.class)
-                    .setFirstResult(page * size)
-                    .setMaxResults(size);
+            String jpql = (categoryId == null)
+                    ? "select i from Item i order by i.id"
+                    : "select i from Item i where i.category.id = :cid order by i.id";
+            TypedQuery<Item> q = em.createQuery(jpql, Item.class);
             if (categoryId != null) q.setParameter("cid", categoryId);
-
-            List<ItemDTO> out = q.getResultList().stream().map(ItemMapper::toDTO).toList();
-            return Response.ok(out).build();
-        } finally {
-            em.close();
-        }
+            q.setFirstResult(page * size);
+            q.setMaxResults(size);
+            return q.getResultList();
+        } finally { em.close(); }
     }
 
     @GET @Path("/{id}")
-    public Response byId(@PathParam("id") Long id) {
-        EntityManager em = JPAUtil.em();
+    public Item get(@PathParam("id") Long id) {
+        EntityManager em = Jpa.em();
+        try { return em.find(Item.class, id); }
+        finally { em.close(); }
+    }
+
+    @POST
+    public Item create(Item in) {
+        EntityManager em = Jpa.em();
         try {
+            em.getTransaction().begin();
+            em.persist(in);
+            em.getTransaction().commit();
+            return in;
+        } finally { em.close(); }
+    }
+
+    @PUT @Path("/{id}")
+    public Item update(@PathParam("id") Long id, Item in) {
+        EntityManager em = Jpa.em();
+        try {
+            em.getTransaction().begin();
             Item i = em.find(Item.class, id);
-            if (i == null) return Response.status(Response.Status.NOT_FOUND).build();
-            return Response.ok(ItemMapper.toDTO(i)).build();
-        } finally {
-            em.close();
-        }
+            i.setName(in.getName());
+            i.setSku(in.getSku());
+            i.setPrice(in.getPrice());
+            i.setStock(in.getStock());
+            i.setCategory(in.getCategory());
+            i.setUpdatedAt(Instant.now());
+            em.getTransaction().commit();
+            return i;
+        } finally { em.close(); }
+    }
+
+    @DELETE @Path("/{id}")
+    public void delete(@PathParam("id") Long id) {
+        EntityManager em = Jpa.em();
+        try {
+            em.getTransaction().begin();
+            Item i = em.find(Item.class, id);
+            em.remove(i);
+            em.getTransaction().commit();
+        } finally { em.close(); }
     }
 }

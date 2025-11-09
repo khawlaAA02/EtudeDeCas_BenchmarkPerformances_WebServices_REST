@@ -1,5 +1,21 @@
 package variantA.dto;
 
-import java.math.BigDecimal;
+public class ItemDTO {
+    public Long id;
+    public String sku;
+    public String name;
+    public double price;   // double comme l'entité
+    public int stock;      // int comme l'entité
+    public Long categoryId;
 
-public record ItemDTO(Long id, String sku, String name, BigDecimal price, Integer stock, Long categoryId) {}
+    public ItemDTO() {}
+
+    public ItemDTO(Long id, String sku, String name, double price, int stock, Long categoryId) {
+        this.id = id;
+        this.sku = sku;
+        this.name = name;
+        this.price = price;
+        this.stock = stock;
+        this.categoryId = categoryId;
+    }
+}

@@ -1,0 +1,11 @@
+server:
+  port: 8084
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/perfdb
+    username: perf
+    password: perf
+  jpa:
+    hibernate:
+      ddl-auto: none

@@ -1,0 +1,5 @@
+variantD\model\Category.class
+variantD\model\Item.class
+variantD\repo\CategoryRepository.class
+variantD\AppD.class
+variantD\repo\ItemRepository.class
